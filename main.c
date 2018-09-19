@@ -13,6 +13,26 @@ typedef struct entry{
 }entry;
 
 
+int removeSubstring(char *s,const char *toremove)
+{
+    while( s=strstr(s, toremove) )
+    {
+        memmove(s, s + strlen(toremove), 1 + strlen(s + strlen(toremove)));
+    }
+
+    return 0;
+}
+
+int sanitize_content(char *token){
+
+    removeSubstring(token, "\n");
+    removeSubstring(token, "\r");
+
+    return 0;
+
+}
+
+
 void merging(entry** entries, entry** internal_buffer, int sorting_index, int low, int mid, int high) {
 
     int l1 = 0;
@@ -111,10 +131,12 @@ int add_fields(entry* array_entry,int* fields_count,  char* line){
 
 
     while ((field = strsep(&temp, ",")) != NULL) {
+
+        sanitize_content(field);
         /* note the trailing field will contain newline. */
         if(strcmp(field, "") == 0){
-            array_entry->fields[i] = malloc(sizeof("") + 1);
-            strncpy( array_entry->fields[i] ,"", sizeof("") + 1);
+            array_entry->fields[i] = malloc(sizeof(" ") + 1);
+            strncpy(array_entry->fields[i] ," ", sizeof(" ") + 1);
         }
         else {
 
@@ -174,6 +196,20 @@ entry** load_array(int* entries_count, int* fields_count, char* file_in_memory){
 
 int main(int argc, char* argv[]) {
 
+
+    if( argc != 3 ){
+        fprintf(stderr, "INVALID NUMBER OF INPUTS\n");
+        return 0;
+    }
+
+
+    if(strcmp(argv[1], "-c") != 0){
+        fprintf(stderr, "INVALID COMMAND\n");
+        return 0;
+    }
+
+
+
     int coutner = 0;
     int file_in_memory_size = 100;
     int ptr_switch_to = 2;
@@ -181,6 +217,9 @@ int main(int argc, char* argv[]) {
     char* file_in_memory = NULL;
     char* file_in_memory1 = (char*) malloc((size_t ) file_in_memory_size * sizeof(char));
     char* file_in_memory2 = NULL;
+
+
+    int sorting_index = -1;
 
 
     char next;
@@ -209,11 +248,10 @@ int main(int argc, char* argv[]) {
     }
 
     if(ptr_switch_to == 1) {
-//        printf("%s\n",file_in_memory2);
+
         file_in_memory = file_in_memory2;
     }else{
 
-//        printf("%s\n",file_in_memory1);
         file_in_memory = file_in_memory1;
     }
 
@@ -224,6 +262,20 @@ int main(int argc, char* argv[]) {
     int j = 0;
 
     entry** entries = load_array(&entries_count, &fields_count, file_in_memory);
+
+    for(i = 0; i < fields_count; i++){
+        if(strcmp(entries[0]->fields[i], argv[2]) == 0){
+            sorting_index = i;
+            break;
+        }
+    }
+
+    if(sorting_index == -1){
+        fprintf(stderr, "INVALID COLUMN NAME\n");
+        goto NAME_NOT_FOUND;
+    }
+
+
     entry** internal_buffer = (entry**) malloc(sizeof(entry*) * entries_count);
 
     while(i < entries_count){
@@ -232,47 +284,39 @@ int main(int argc, char* argv[]) {
         i++;
     }
 
-    printf("%d\n", i);
 
-    for(i =0; i <entries_count -2 ; i++) {
-        printf("%s\n", entries[i]->fields[1]);
-
-    }
-
-
-    printf("\n-----------------------------------------------------------------------------\n");
 
     sort(entries,internal_buffer, 1, 1, entries_count - 2);
 
-    printf("\n-----------------------------------------------------------------------------\n");
 
 
 
-    for(i =0; i < entries_count - 2; i++) {
-        printf("%s\n", entries[i]->fields[1]);
+    for(i =0; i < entries_count - 1; i++) {
+
+        for(j= 0; j < fields_count ; j++){
+
+            printf("%s", entries[i]->fields[j]);
+            if(j == fields_count - 1){
+                break;
+            }
+            printf(",");
+        }
+
+        printf("\n");
 
     }
 
 
-
-
-
-
-
-    for(i = 0; i < entries_count -1; i++){
+   for(i = 0; i < entries_count -1; i++){
         free(internal_buffer[i]);
     }
 
     free(internal_buffer);
 
 
-    for(i = 0; i < entries_count - 1; i++){
+   NAME_NOT_FOUND:   for(i = 0; i < entries_count - 2; i++){
 
         for(j= 0; j < fields_count - 1; j++){
-
-            if(entries[i]->fields[j] == NULL){
-                continue;
-            }
 
             free(entries[i]->fields[j]);
         }
