@@ -21,6 +21,7 @@ void merging(entry** entries, entry** internal_buffer, int sorting_index, int lo
 
     for(l1 = low, l2 = mid + 1, i = low; l1 <= mid && l2 <= high; i++) {
 
+
         if(strcmp(entries[l1]->fields[sorting_index], entries[l2]->fields[sorting_index]) <= 0){
             memcpy(internal_buffer[i], entries[l1], sizeof(entries[l1]));
             l1++;
@@ -36,6 +37,7 @@ void merging(entry** entries, entry** internal_buffer, int sorting_index, int lo
         i++;
         l1++;
     }
+
     while(l2 <= high){
         memcpy(internal_buffer[i], entries[l2], sizeof(entries[l2]));
         i++;
@@ -45,6 +47,7 @@ void merging(entry** entries, entry** internal_buffer, int sorting_index, int lo
     for(i = low; i <= high; i++) {
         memcpy(entries[i], internal_buffer[i], sizeof(internal_buffer[i]));
     }
+
 }
 
 void sort(entry** entries, entry** internal_buffer,int sorting_index ,int low, int high) {
@@ -149,8 +152,7 @@ entry** load_array(int* entries_count, int* fields_count, char* file_in_memory){
 
     char line_buffer[2048] ={0};
 
-    while (fgets(line_buffer, sizeof(line_buffer), fptr) != NULL && i < 11) {
-
+    while (fgets(line_buffer, sizeof(line_buffer), fptr) != NULL) {
 
         buffer[i] = (entry*) malloc(sizeof(entry));
 
@@ -158,9 +160,6 @@ entry** load_array(int* entries_count, int* fields_count, char* file_in_memory){
 
 
         i++;
-
-
-
 
     }
 
@@ -222,26 +221,34 @@ int main(int argc, char* argv[]) {
     int entries_count = -1;
     int fields_count = -1;
     int i = 0;
+    int j = 0;
 
     entry** entries = load_array(&entries_count, &fields_count, file_in_memory);
     entry** internal_buffer = (entry**) malloc(sizeof(entry*) * entries_count);
 
     while(i < entries_count){
+
         internal_buffer[i] = (entry*) malloc(sizeof(entry));
         i++;
     }
 
-    for(i =0; i <11; i++) {
+    printf("%d\n", i);
+
+    for(i =0; i <entries_count -2 ; i++) {
         printf("%s\n", entries[i]->fields[1]);
 
     }
+
 
     printf("\n-----------------------------------------------------------------------------\n");
 
-    sort(entries,internal_buffer, 1, 1, 10);
+    sort(entries,internal_buffer, 1, 1, entries_count - 2);
+
+    printf("\n-----------------------------------------------------------------------------\n");
 
 
-    for(i =0; i <11; i++) {
+
+    for(i =0; i < entries_count - 2; i++) {
         printf("%s\n", entries[i]->fields[1]);
 
     }
@@ -249,14 +256,37 @@ int main(int argc, char* argv[]) {
 
 
 
-//
-//    for(i = 0; i < array_entries -1; i++){
-//        free(entries[i].fields);
-//    }
-//
-//    free(entries);
 
 
-        free(file_in_memory);
+
+    for(i = 0; i < entries_count -1; i++){
+        free(internal_buffer[i]);
+    }
+
+    free(internal_buffer);
+
+
+    for(i = 0; i < entries_count - 1; i++){
+
+        for(j= 0; j < fields_count - 1; j++){
+
+            if(entries[i]->fields[j] == NULL){
+                continue;
+            }
+
+            free(entries[i]->fields[j]);
+        }
+
+        free(entries[i]->fields);
+
+        free(entries[i]);
+    }
+
+    free(entries);
+
+
+    free(file_in_memory);
+
+
     return 0;
 }
