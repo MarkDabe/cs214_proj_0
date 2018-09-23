@@ -128,9 +128,7 @@ int add_fields(entry* array_entry,int* fields_count,  char* line){
     strncpy(temp,line,array_entry->length);
     array_entry->fields = (char**) malloc((*fields_count) * sizeof(char*));
 
-
-
-    while ((field = strsep(&temp, ",")) != NULL) {
+    while ((field = strsep(&temp, ",")) != NULL && i < 28) {
 
         sanitize_content(field);
         /* note the trailing field will contain newline. */
@@ -142,11 +140,32 @@ int add_fields(entry* array_entry,int* fields_count,  char* line){
 
             array_entry->fields[i] = (char *) malloc((strlen(field) + 1) * sizeof(char));
             strncpy(array_entry->fields[i], field, strlen(field) + 1);
+            if(array_entry->fields[i][0] == '"'){
+
+                size_t index = strlen(field);
+                size_t size = strlen(field) + 1;
+
+                while(field[strlen(field)-1] != '"') {
+
+                    field = strsep(&temp, ",");
+                    size += strlen(field);
+                    array_entry->fields[i] = realloc(array_entry->fields[i], size);
+                    memcpy(array_entry->fields[i] + index, field, strlen(field) + 1);
+                    index += strlen(field);
+                }
+
+
+
+            }
         }
+
         i++;
+
+
+
     }
 
-        free(temp);
+    free(temp);
 
 
     return 0;
@@ -182,6 +201,7 @@ entry** load_array(int* entries_count, int* fields_count, char* file_in_memory){
 
 
         i++;
+
 
     }
 
@@ -286,7 +306,7 @@ int main(int argc, char* argv[]) {
 
 
 
-    sort(entries,internal_buffer, 1, 1, entries_count - 2);
+    sort(entries,internal_buffer, sorting_index, 1, entries_count - 2);
 
 
 
