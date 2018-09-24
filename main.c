@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <string.h>
 
 #define BUFFSIZE 1024
 
+
+int merge_numeric = 1;
 
 typedef struct entry{
 
@@ -68,7 +71,50 @@ int sanitize_content(char *token){
 }
 
 
-void merging(entry** entries, entry** internal_buffer, int sorting_index, int low, int mid, int high) {
+void merging_int(entry** entries, entry** internal_buffer, int sorting_index, int low, int mid, int high) {
+
+
+
+    int l1 = 0;
+    int l2 = 0;
+    int i = 0;
+
+
+    for(l1 = low, l2 = mid + 1, i = low; l1 <= mid && l2 <= high; i++) {
+
+
+        if(atoi(entries[l1]->fields[sorting_index]) <= atoi(entries[l2]->fields[sorting_index])){
+
+            memcpy(internal_buffer[i], entries[l1], sizeof(entries[l1]));
+            l1++;
+        }
+        else{
+            memcpy(internal_buffer[i], entries[l2], sizeof(entries[l2]));
+            l2++;
+        }
+    }
+
+    while(l1 <= mid) {
+        memcpy(internal_buffer[i], entries[l1], sizeof(entries[l1]));
+        i++;
+        l1++;
+    }
+
+    while(l2 <= high){
+        memcpy(internal_buffer[i], entries[l2], sizeof(entries[l2]));
+        i++;
+        l2++;
+    }
+
+    for(i = low; i <= high; i++) {
+        memcpy(entries[i], internal_buffer[i], sizeof(internal_buffer[i]));
+    }
+
+}
+
+
+
+void merging_string(entry** entries, entry** internal_buffer, int sorting_index, int low, int mid, int high) {
 
 
 
@@ -109,6 +155,7 @@ void merging(entry** entries, entry** internal_buffer, int sorting_index, int lo
 
 }
 
+
 void sort(entry** entries, entry** internal_buffer,int sorting_index ,int low, int high) {
 
     int mid;
@@ -117,7 +164,12 @@ void sort(entry** entries, entry** internal_buffer,int sorting_index ,int low, i
         mid = (low + high) / 2;
         sort(entries, internal_buffer, sorting_index,low, mid);
         sort(entries, internal_buffer, sorting_index,mid + 1, high);
-        merging(entries, internal_buffer, sorting_index,low, mid, high);
+        if(merge_numeric == 1){
+            merging_int(entries, internal_buffer, sorting_index, low, mid, high);
+        }
+        else {
+            merging_string(entries, internal_buffer, sorting_index, low, mid, high);
+        }
     } else {
         return;
     }
@@ -334,7 +386,28 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    int k = 1;
+
+    for(k=1; k < entries_count; k++){
+
+        if(strcmp(entries[k]->fields[sorting_index], "") != 0){
+            break;
+        }
+
+    }
+
+
+    for(i = 0; i < fields_count; i++){
+        if((!isdigit(entries[k]->fields[sorting_index][i]))){
+            merge_numeric = 0;
+            break;
+        }
+    }
+
+
     i = 0 ;
+
+
 
     if(sorting_index == -1){
         fprintf(stderr, "INVALID COLUMN NAME\n");
