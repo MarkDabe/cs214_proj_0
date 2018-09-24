@@ -12,6 +12,41 @@ typedef struct entry{
 
 }entry;
 
+void trimTrailing(char * str)
+{
+    int index, i;
+
+    index = -1;
+
+    i = 0;
+    while(str[i] != '\0')
+    {
+        if(str[i] != ' ')
+        {
+            index= i;
+        }
+
+        i++;
+    }
+
+    str[index + 1] = '\0';
+}
+
+void trimTrailingQoute(char * str)
+{
+    size_t length = strlen(str);
+
+    int i = (int) length - 2;
+
+    while(str[i] == ' ')
+    {
+        i--;
+    }
+
+    str[i + 1] = '"';
+    str[i + 2] = '\0';
+}
+
 
 int removeSubstring(char *s,const char *toremove)
 {
@@ -131,10 +166,11 @@ int add_fields(entry* array_entry,int* fields_count,  char* line){
     while ((field = strsep(&temp, ",")) != NULL && i < 28) {
 
         sanitize_content(field);
+        trimTrailing(field);
         /* note the trailing field will contain newline. */
         if(strcmp(field, "") == 0){
-            array_entry->fields[i] = malloc(sizeof(" ") + 1);
-            strncpy(array_entry->fields[i] ," ", sizeof(" ") + 1);
+            array_entry->fields[i] = malloc(sizeof("") + 1);
+            strncpy(array_entry->fields[i] ,"\0", sizeof("") + 1);
         }
         else {
 
@@ -148,6 +184,9 @@ int add_fields(entry* array_entry,int* fields_count,  char* line){
                 while(field[strlen(field)-1] != '"') {
 
                     field = strsep(&temp, ",");
+                    if(field[strlen(field)-1] == '"'){
+                        trimTrailingQoute(field);
+                    }
                     size += strlen(field);
                     array_entry->fields[i] = realloc(array_entry->fields[i], size);
                     memcpy(array_entry->fields[i] + index, field, strlen(field) + 1);
@@ -311,7 +350,7 @@ int main(int argc, char* argv[]) {
 
 
 
-    for(i =0; i < entries_count - 1; i++) {
+    for(i = 0; i < entries_count - 1; i++) {
 
         for(j= 0; j < fields_count ; j++){
 
