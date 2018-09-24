@@ -70,14 +70,18 @@ int sanitize_content(char *token){
 
 void merging(entry** entries, entry** internal_buffer, int sorting_index, int low, int mid, int high) {
 
+
+
     int l1 = 0;
     int l2 = 0;
     int i = 0;
+
 
     for(l1 = low, l2 = mid + 1, i = low; l1 <= mid && l2 <= high; i++) {
 
 
         if(strcmp(entries[l1]->fields[sorting_index], entries[l2]->fields[sorting_index]) <= 0){
+
             memcpy(internal_buffer[i], entries[l1], sizeof(entries[l1]));
             l1++;
         }
@@ -106,6 +110,7 @@ void merging(entry** entries, entry** internal_buffer, int sorting_index, int lo
 }
 
 void sort(entry** entries, entry** internal_buffer,int sorting_index ,int low, int high) {
+
     int mid;
 
     if (low < high) {
@@ -329,6 +334,8 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    i = 0 ;
+
     if(sorting_index == -1){
         fprintf(stderr, "INVALID COLUMN NAME\n");
         goto NAME_NOT_FOUND;
@@ -345,7 +352,7 @@ int main(int argc, char* argv[]) {
 
 
 
-    sort(entries,internal_buffer, sorting_index, 1, entries_count - 2);
+        sort(entries, internal_buffer, sorting_index, 1, entries_count - 2);
 
 
 
