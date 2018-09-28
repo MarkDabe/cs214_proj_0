@@ -4,61 +4,6 @@
 int merge_numeric = 1;
 
 
-void trimTrailing(char * str)
-{
-    int index, i;
-
-    index = -1;
-
-    i = 0;
-    while(str[i] != '\0')
-    {
-        if(str[i] != ' ')
-        {
-            index= i;
-        }
-
-        i++;
-    }
-
-    str[index + 1] = '\0';
-}
-
-void trimTrailingQoute(char * str)
-{
-    size_t length = strlen(str);
-
-    int i = (int) length - 2;
-
-    while(str[i] == ' ')
-    {
-        i--;
-    }
-
-    str[i + 1] = '"';
-    str[i + 2] = '\0';
-}
-
-
-int removeSubstring(char *s,const char *toremove)
-{
-    while( s=strstr(s, toremove) )
-    {
-        memmove(s, s + strlen(toremove), 1 + strlen(s + strlen(toremove)));
-    }
-
-    return 0;
-}
-
-int sanitize_content(char *token){
-
-    removeSubstring(token, "\n");
-    removeSubstring(token, "\r");
-
-    return 0;
-
-}
-
 
 void sort(entry** entries, entry** internal_buffer,int sorting_index ,int low, int high) {
 
@@ -127,8 +72,7 @@ int add_fields(entry* array_entry,int* fields_count,  char* line){
     while ((field = strsep(&temp, ",")) != NULL && i < 28) {
 
         sanitize_content(field);
-        trimTrailing(field);
-        /* note the trailing field will contain newline. */
+
         if(strcmp(field, "") == 0){
             array_entry->fields[i] = malloc(sizeof("") + 1);
             strncpy(array_entry->fields[i] ,"\0", sizeof("") + 1);
@@ -145,13 +89,12 @@ int add_fields(entry* array_entry,int* fields_count,  char* line){
                 while(field[strlen(field)-1] != '"') {
 
                     field = strsep(&temp, ",");
-                    if(field[strlen(field)-1] == '"'){
-                        trimTrailingQoute(field);
-                    }
-                    size += strlen(field);
-                    array_entry->fields[i] = realloc(array_entry->fields[i], size);
-                    memcpy(array_entry->fields[i] + index, field, strlen(field) + 1);
-                    index += strlen(field);
+
+                        size += strlen(field) + 1;
+                        array_entry->fields[i] = realloc(array_entry->fields[i], size);
+                        sprintf(array_entry->fields[i] + index, ",%s", field);
+                        index += strlen(field) + 1;
+
                 }
 
 
@@ -290,26 +233,30 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    int k = 1;
+    int k ;
 
-    for(k=1; k < entries_count; k++){
+    for(k=1; k < entries_count -1; k++){
 
-        if(strcmp(entries[k]->fields[sorting_index], "") != 0){
-            break;
+        if(strcmp(entries[k]->fields[sorting_index], "") == 0){
+            continue;
         }
 
+
+        int entry_length =  (int) strlen(entries[k]->fields[sorting_index]);
+
+        for(i = 0; i < entry_length; i++){
+
+
+            if(!(isdigit(entries[k]->fields[sorting_index][i]))){
+                merge_numeric = 0;
+                break;
+            }
+        }
     }
 
 
-    for(i = 0; i < fields_count; i++){
-        if((!isdigit(entries[k]->fields[sorting_index][i]))){
-            merge_numeric = 0;
-            break;
-        }
-    }
 
-
-    i = 0 ;
+    i = 0;
 
 
 

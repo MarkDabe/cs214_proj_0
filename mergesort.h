@@ -22,5 +22,9 @@ typedef struct entry{
 
 void merging_string(entry** entries, entry** internal_buffer, int sorting_index, int low, int mid, int high);
 void merging_int(entry** entries, entry** internal_buffer, int sorting_index, int low, int mid, int high);
+int sanitize_content(char *token);
+char* clean_string(char* string);
+int removeSubstring(char *s,const char *toremove);
+char* trimSpaces(char * str);
 
 #endif
