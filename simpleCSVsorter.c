@@ -4,7 +4,7 @@
 int merge_numeric = 1;
 
 
-
+// sorting function that calls merging_int or merging_string depending on data type
 void sort(entry** entries, entry** internal_buffer,int sorting_index ,int low, int high) {
 
     int mid;
@@ -23,7 +23,10 @@ void sort(entry** entries, entry** internal_buffer,int sorting_index ,int low, i
         return;
     }
 }
+//
 
+
+// function to count the number of fields needed
     int countfields(char* line){
     int count = 0;
     int i =0;
@@ -37,8 +40,9 @@ void sort(entry** entries, entry** internal_buffer,int sorting_index ,int low, i
     return count + 1;
 
 }
+//
 
-
+// function to count the number of lines in the opened file in memory
 int countlines (FILE *fin)
 {
     int  nlines  = 0;
@@ -50,8 +54,9 @@ int countlines (FILE *fin)
 
     return nlines;
 }
+//
 
-
+// add fields from a line in the opened file to an entry element in a the entry array
 int add_fields(entry* array_entry,int* fields_count,  char* line){
 
     int i = 0;
@@ -115,6 +120,10 @@ int add_fields(entry* array_entry,int* fields_count,  char* line){
 
 }
 
+//
+
+
+// build the array of entries through opening a file in memory and counting the number of entries needed to build the array
 entry** load_array(int* entries_count, int* fields_count, char* file_in_memory){
 
     int i = 0;
@@ -157,22 +166,27 @@ entry** load_array(int* entries_count, int* fields_count, char* file_in_memory){
     return buffer;
 }
 
+//
+
 int main(int argc, char* argv[]) {
 
-
+// check for the number of arguments
     if( argc != 3 ){
         fprintf(stderr, "INVALID NUMBER OF INPUTS\n");
         return 0;
     }
+//
 
-
+// check for flag -c in input
     if(strcmp(argv[1], "-c") != 0){
         fprintf(stderr, "INVALID COMMAND\n");
         return 0;
     }
+//
 
 
-
+// get data piped from stdin and put it in memory. At the end there would be a memory buffer having all the contents
+// passed in from stdin. using this buffer, will open a file in memory using fmemopen
     int coutner = 0;
     int file_in_memory_size = 100;
     int ptr_switch_to = 2;
@@ -217,15 +231,18 @@ int main(int argc, char* argv[]) {
 
         file_in_memory = file_in_memory1;
     }
+//
 
-
+// call the function that builds the array
     int entries_count = -1;
     int fields_count = -1;
     int i = 0;
     int j = 0;
 
     entry** entries = load_array(&entries_count, &fields_count, file_in_memory);
+//
 
+// determine if column to be sorted exists in fields
     for(i = 0; i < fields_count; i++){
         if(strcmp(entries[0]->fields[i], argv[2]) == 0){
             sorting_index = i;
@@ -233,6 +250,14 @@ int main(int argc, char* argv[]) {
         }
     }
 
+
+    if(sorting_index == -1){
+        fprintf(stderr, "INVALID COLUMN NAME\n");
+        goto NAME_NOT_FOUND;
+    }
+//
+
+//determine the type of entries to be sorted (numeric vs strings)
     int k ;
 
     for(k=1; k < entries_count -1; k++){
@@ -254,18 +279,12 @@ int main(int argc, char* argv[]) {
         }
     }
 
-
-
     i = 0;
 
 
+//
 
-    if(sorting_index == -1){
-        fprintf(stderr, "INVALID COLUMN NAME\n");
-        goto NAME_NOT_FOUND;
-    }
-
-
+// load the internal buffer needed by mergesort
     entry** internal_buffer = (entry**) malloc(sizeof(entry*) * entries_count);
 
     while(i < entries_count){
@@ -273,14 +292,14 @@ int main(int argc, char* argv[]) {
         internal_buffer[i] = (entry*) malloc(sizeof(entry));
         i++;
     }
+//
 
-
-
+// call sort on the array
         sort(entries, internal_buffer, sorting_index, 1, entries_count - 2);
+//
 
 
-
-
+// print the sorted array
     for(i = 0; i < entries_count - 1; i++) {
 
         for(j= 0; j < fields_count ; j++){
@@ -295,8 +314,9 @@ int main(int argc, char* argv[]) {
         printf("\n");
 
     }
+//
 
-
+// free memory
    for(i = 0; i < entries_count -1; i++){
         free(internal_buffer[i]);
     }
@@ -320,7 +340,7 @@ int main(int argc, char* argv[]) {
 
 
     free(file_in_memory);
-
+//
 
     return 0;
 }
